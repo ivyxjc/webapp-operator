@@ -1,0 +1,6 @@
+domain: webapp.ivyxjc.com
+layout:
+- go.kubebuilder.io/v3
+projectName: webapp-operator
+repo: github.com/ivyxjc/webapp-operator
+version: "3"
