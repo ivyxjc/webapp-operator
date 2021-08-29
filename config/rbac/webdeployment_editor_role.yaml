@@ -1,0 +1,24 @@
+# permissions for end users to edit webdeployments.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: webdeployment-editor-role
+rules:
+- apiGroups:
+  - webapp.webapp.ivyxjc.com
+  resources:
+  - webdeployments
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - webapp.webapp.ivyxjc.com
+  resources:
+  - webdeployments/status
+  verbs:
+  - get

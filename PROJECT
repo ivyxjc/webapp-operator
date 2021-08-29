@@ -3,4 +3,14 @@ layout:
 - go.kubebuilder.io/v3
 projectName: webapp-operator
 repo: github.com/ivyxjc/webapp-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: webapp.ivyxjc.com
+  group: webapp
+  kind: WebDeployment
+  path: github.com/ivyxjc/webapp-operator/api/v1
+  version: v1
 version: "3"
