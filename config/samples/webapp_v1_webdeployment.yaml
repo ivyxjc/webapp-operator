@@ -1,7 +1,20 @@
 apiVersion: webapp.webapp.ivyxjc.com/v1
 kind: WebDeployment
 metadata:
-  name: webdeployment-sample
+    name: webdeployment-sample
 spec:
-  # Add fields here
-  foo: bar
+    deployment:
+        replicas: 3
+        selector:
+            matchLabels:
+                app: nginx
+        template:
+            metadata:
+                labels:
+                    app: nginx
+            spec:
+                containers:
+                    -   name: nginx
+                        image: nginx:1.14.2
+                        ports:
+                            -   containerPort: 80

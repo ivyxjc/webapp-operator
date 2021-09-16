@@ -18,19 +18,20 @@ package controllers
 
 import (
 	"context"
-
+	"github.com/go-logr/logr"
+	webappv1 "github.com/ivyxjc/webapp-operator/api/v1"
+	appsv1beta1 "k8s.io/api/apps/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
-
-	webappv1 "github.com/ivyxjc/webapp-operator/api/v1"
 )
 
 // WebDeploymentReconciler reconciles a WebDeployment object
 type WebDeploymentReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
+	Log    logr.Logger
 }
 
 //+kubebuilder:rbac:groups=webapp.webapp.ivyxjc.com,resources=webdeployments,verbs=get;list;watch;create;update;patch;delete
@@ -47,11 +48,43 @@ type WebDeploymentReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.8.3/pkg/reconcile
 func (r *WebDeploymentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	log := r.Log.WithValues("webDeployment", req.NamespacedName)
 
-	// your logic here
+	var webDeployment webappv1.WebDeployment
+	if err := r.Get(ctx, req.NamespacedName, &webDeployment); err != nil {
+		log.Error(err, "unable to fetch CronJob")
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	deployment, err := r.constructJobForWebDeployment(&webDeployment)
+	log.V(1).Info("created Web Deployment")
+	if err != nil {
+		log.Error(err, "unable to construct deployment")
+		return ctrl.Result{}, nil
+	}
+	if err := r.Create(ctx, deployment); err != nil {
+		log.Error(err, "unable to create deployment")
+		return ctrl.Result{}, err
+	}
 
 	return ctrl.Result{}, nil
+}
+
+func (r *WebDeploymentReconciler) constructJobForWebDeployment(webDeployment *webappv1.WebDeployment) (*appsv1beta1.Deployment, error) {
+	deployment := &appsv1beta1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels:      make(map[string]string),
+			Annotations: make(map[string]string),
+			Name:        webDeployment.Name,
+			Namespace:   webDeployment.Namespace,
+		},
+		Spec: *webDeployment.Spec.Deployment.DeepCopy(),
+	}
+
+	if err := ctrl.SetControllerReference(webDeployment, deployment, r.Scheme); err != nil {
+		return nil, err
+	}
+	return deployment, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.

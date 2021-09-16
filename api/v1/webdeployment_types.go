@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	appsv1beta1 "k8s.io/api/apps/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -30,6 +31,8 @@ type WebDeploymentSpec struct {
 
 	// Foo is an example field of WebDeployment. Edit webdeployment_types.go to remove/update
 	Foo string `json:"foo,omitempty"`
+
+	Deployment appsv1beta1.DeploymentSpec `json:"deployment,omitempty"`
 }
 
 // WebDeploymentStatus defines the observed state of WebDeployment
